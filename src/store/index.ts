@@ -1,18 +1,20 @@
 import { useDispatch, useSelector } from 'react-redux'
 import type { TypedUseSelectorHook } from 'react-redux'
 import { configureStore } from '@reduxjs/toolkit'
+import { setupListeners } from '@reduxjs/toolkit/query/react'
 
-import { todosReducer } from './slices/todosSlice'
-import { fetchTodos } from './thunks/fetchTodos'
-import { postTodo } from './thunks/postTodo'
-import { patchTodo } from './thunks/patchTodo'
-import { deleteTodo } from './thunks/deleteTodo'
+import { todosApi } from './apis/todos'
 
 const store = configureStore({
   reducer: {
-    todos: todosReducer,
+    [todosApi.reducerPath]: todosApi.reducer
+  },
+  middleware (getDefaultMiddleware) {
+    return getDefaultMiddleware().concat(todosApi.middleware)
   }
 })
+
+setupListeners(store.dispatch)
 
 export {
   store
@@ -21,7 +23,12 @@ export {
 type AppDispatch = typeof store.dispatch
 type RootState = ReturnType<typeof store.getState>
 
-export { fetchTodos, postTodo, patchTodo, deleteTodo }
-
 export const useAppDispatch: () => AppDispatch = useDispatch
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector
+
+export {
+  usePostTodoMutation,
+  usePatchTodoMutation,
+  useFetchTodosQuery,
+  useDeleteTodoMutation
+} from './apis/todos'
